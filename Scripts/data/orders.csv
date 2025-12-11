@@ -1,0 +1,3 @@
+order_code,customer_name,phone,address,product,quantity,total,status,created_at,updated_at
+20241129-N-789,Nguyễn Văn A,0123456789,"123 Đường ABC, Quận 1, TP.HCM",Sơn dầu trắng 111 3kg,2,800000,Đang giao hàng,2024-11-29 10:00:00,2024-11-29 14:00:00
+20241128-T-456,Trần Thị B,0987654321,"456 Đường XYZ, Quận 2, TP.HCM",Sơn nước xanh 5kg,1,300000,Đã giao hàng,2024-11-28 09:00:00,2024-11-28 16:00:00

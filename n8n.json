@@ -1,0 +1,1154 @@
+{
+  "name": "main copy",
+  "nodes": [
+    {
+      "parameters": {
+        "eventTypes": [
+          0
+        ],
+        "selfListen": true
+      },
+      "type": "n8n-nodes-zalo-tools.zaloMessageTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1904,
+        -880
+      ],
+      "id": "7502dfff-6206-4ad9-b408-2ea078395340",
+      "name": "Zalo Message Trigger",
+      "webhookId": "f54a18f9-2ac3-49e1-b173-5416ed236864",
+      "credentials": {
+        "zaloApi": {
+          "id": "JiAVhbGqT4dFMVum",
+          "name": "Zalo API Credentials"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "threadId": "={{ $('Zalo Message Trigger').item.json.message.threadId }}",
+        "message": "={{ $json.output }}",
+        "quote": {},
+        "mentions": {}
+      },
+      "type": "n8n-nodes-zalo-tools.zaloSendMessage",
+      "typeVersion": 4,
+      "position": [
+        -784,
+        -864
+      ],
+      "id": "82901496-0760-4da1-895a-c87f07f77f9c",
+      "name": "Zalo Send Message",
+      "credentials": {
+        "zaloApi": {
+          "id": "JiAVhbGqT4dFMVum",
+          "name": "Zalo API Credentials"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "{\"json\":\"Create_O\"}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "2686f2b7-4b91-4193-8dc1-bc0799407217"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "create"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "a2061ce4-73fe-4309-9ea0-dcc69944f000",
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "{\"json\":\"Unknown\"}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "unknown"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "12baf1df-4f42-447b-bb48-a6ae142a163f",
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "{\"json\":\"Check_O\"}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "check_order"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        -1408,
+        -896
+      ],
+      "id": "aaca53e0-b70c-427a-9d74-b901c4357b1e",
+      "name": "Switch",
+      "alwaysOutputData": false,
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $json.idSpreadsheet }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Trang tính1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/18bK0V1yX7DJSqmt6_Bfv6GYx1CT11CSe55ECVdA8PQI/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Tên": "={{ $('data_cus_order').item.json.Ten }}",
+            "Số điện thoại": "={{ $('data_cus_order').item.json.SDT }}",
+            "Địa chỉ": "={{ $('data_cus_order').item.json.DiaChi }}",
+            "Mã đơn hàng": "={{ $('data_cus_order').item.json.MaDonHang }}",
+            "Đơn hàng": "={{ $('data_cus_order').item.json.order }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Mã đơn hàng",
+              "displayName": "Mã đơn hàng",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Tên",
+              "displayName": "Tên",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Số điện thoại",
+              "displayName": "Số điện thoại",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Địa chỉ",
+              "displayName": "Địa chỉ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Đơn hàng",
+              "displayName": "Đơn hàng",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -784,
+        -1760
+      ],
+      "id": "1021dab8-8e31-4b17-b526-5cb1e7c85e77",
+      "name": "Create_O",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "si77zvh4CuG7tdMM",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1744,
+        -1264
+      ],
+      "id": "259041d8-efb4-4217-ae57-0db11a8fccbc",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "move",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.spreadsheetId }}",
+          "mode": "id"
+        },
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list",
+          "cachedResultName": "My Drive",
+          "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1-xOf232Iv5qszKmPJb3k1wdEnqb0u-_e",
+          "mode": "list",
+          "cachedResultName": "SDD",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1-xOf232Iv5qszKmPJb3k1wdEnqb0u-_e"
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -1104,
+        -1264
+      ],
+      "id": "09f46a28-2fcd-4f91-a35a-bee89a1d6700",
+      "name": "Move file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "VwMuDZ3uOlWQXbUK",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "spreadsheet",
+        "title": "={{ String(new Date($today).getDate()).padStart(2,'0') + String(new Date($today).getMonth()+1) + new Date($today).getYear() }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1312,
+        -1264
+      ],
+      "id": "3019408c-140f-4337-a766-776d5a2e3b0a",
+      "name": "create_file_save_O",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "si77zvh4CuG7tdMM",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "wEuPv8AQGdhSAFdQ",
+          "mode": "list",
+          "cachedResultName": "IDspreadsheet",
+          "cachedResultUrl": "/projects/HvnodsxSCLVAj2nL/datatables/wEuPv8AQGdhSAFdQ"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "idSpreadsheet": "={{ $json.spreadsheetId }}",
+            "date": "={{ $today }}"
+          },
+          "matchingColumns": [
+            "idSpreadsheet"
+          ],
+          "schema": [
+            {
+              "id": "idSpreadsheet",
+              "displayName": "idSpreadsheet",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -1104,
+        -1408
+      ],
+      "id": "177c6c75-3bfd-4fb1-9833-44e04575035c",
+      "name": "Insert row"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "wEuPv8AQGdhSAFdQ",
+          "mode": "list",
+          "cachedResultName": "IDspreadsheet",
+          "cachedResultUrl": "/projects/HvnodsxSCLVAj2nL/datatables/wEuPv8AQGdhSAFdQ"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "date",
+              "keyValue": "={{ $today }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -784,
+        -1632
+      ],
+      "id": "bf0a77ef-5d5b-4a74-8db4-7dbc0ad4874f",
+      "name": "Get row(s)",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "deleteRows",
+        "dataTableId": {
+          "__rl": true,
+          "value": "wEuPv8AQGdhSAFdQ",
+          "mode": "list",
+          "cachedResultName": "IDspreadsheet",
+          "cachedResultUrl": "/projects/HvnodsxSCLVAj2nL/datatables/wEuPv8AQGdhSAFdQ"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "date",
+              "condition": "neq",
+              "keyValue": "={{ $today }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -1520,
+        -1264
+      ],
+      "id": "fc5f370a-6f5f-4623-9656-0b1460aef0b2",
+      "name": "Delete row(s)"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "9a35ecb2-f408-4e9f-83c9-7d282bf58316",
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "Cảm ơn quý khách đã đặt hàng của công ty Sơn Đức Dương",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "lấy sheetID"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "ae64b1fd-eb25-4fc7-b85a-163b52df55b3",
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "Cảm ơn quý khách đã đặt hàng của công ty Sơn Đức Dương",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notStartsWith"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "tiếp tục tư vấn"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        -768,
+        -1088
+      ],
+      "id": "9391a8e5-a225-4f13-9f23-9b7cc2dd87eb",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "operation": "deleteRows",
+        "dataTableId": {
+          "__rl": true,
+          "value": "tA4HVlXco15klLP6",
+          "mode": "list",
+          "cachedResultName": "DonHang",
+          "cachedResultUrl": "/projects/HvnodsxSCLVAj2nL/datatables/tA4HVlXco15klLP6"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "MaDonHang",
+              "keyValue": "={{ $('data_cus_order').item.json.MaDonHang }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -784,
+        -1904
+      ],
+      "id": "cfbd8c71-49f5-4e29-abcc-be2fce653a9b",
+      "name": "Delete row(s)1"
+    },
+    {
+      "parameters": {
+        "language": "python",
+        "pythonCode": "order_text = items[0]['json']['output']\n\n# Xử lý \\n thành xuống dòng thật\norder_text = order_text.replace('\\\\n', '\\n')\n\nlines = order_text.splitlines()\n\n# Tìm dòng chứa \"mã đơn\"\norder_code = \"\"\nname = \"\"\nphone = \"\"\naddress = \"\"\norder_line = \"\"\n\nfor i, line in enumerate(lines):\n    if \"mã đơn\" in line:\n        order_code = line.split(\":\",1)[1].strip().replace(\"-\", \"\").replace(\" \", \"\")\n    elif \"Tên người đặt hàng\" in line:\n        name = line.split(\":\",1)[1].strip()\n    elif \"Số điện thoại\" in line:\n        phone = line.split(\":\",1)[1].strip()\n    elif \"Địa chỉ nhận hàng\" in line:\n        address = line.split(\":\",1)[1].strip()\n    elif \"Đơn hàng\" in line:\n        order_line = line.split(\":\",1)[1].strip()\n\nproducts = [p.strip() for p in order_line.split(\",\")]\nresult = []\n\nfor p in products:\n    result.append({\n        \"json\": {\n            \"name_cus\": name,\n            \"phone_cus\": phone,\n            \"address_cus\": address,\n            \"order_code\": order_code,\n            \"order\": p\n        }\n    })\n\nreturn result"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -784,
+        -1312
+      ],
+      "id": "a013cd26-cb5f-4d5d-a3a8-a154418c2f88",
+      "name": "tách dữ liệu",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "tA4HVlXco15klLP6",
+          "mode": "list",
+          "cachedResultName": "DonHang",
+          "cachedResultUrl": "/projects/HvnodsxSCLVAj2nL/datatables/tA4HVlXco15klLP6"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Ten": "={{ $json.name_cus }}",
+            "SDT": "={{ $json.phone_cus }}",
+            "MaDonHang": "={{ $json.order_code }}",
+            "order": "={{ $json.order }}",
+            "DiaChi": "={{ $json.address_cus }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Ten",
+              "displayName": "Ten",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "SDT",
+              "displayName": "SDT",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "DiaChi",
+              "displayName": "DiaChi",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "order",
+              "displayName": "order",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MaDonHang",
+              "displayName": "MaDonHang",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -784,
+        -1504
+      ],
+      "id": "820decc3-7fd1-40ba-89d2-38193a5f426b",
+      "name": "data_cus_order"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -1856,
+        -672
+      ],
+      "id": "1cef02c6-5355-43c4-8dc0-c54a35aa77d8",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "2CpNUbYLbfayBvw1",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.message.data.uidFrom }}",
+        "contextWindowLength": 20
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -1712,
+        -672
+      ],
+      "id": "6987efc1-67e4-4df8-8fe9-fc96012753dc",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -1168,
+        -880
+      ],
+      "id": "856a2475-2433-4027-b79b-8f88b0901f17",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "2CpNUbYLbfayBvw1",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -1168,
+        -560
+      ],
+      "id": "eb466132-d138-4406-b0df-1ba9ecdbd2a6",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "2CpNUbYLbfayBvw1",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -1152,
+        -192
+      ],
+      "id": "d701b6b5-a9f5-4c6e-ac11-46ea83680f58",
+      "name": "OpenAI Chat Model3",
+      "credentials": {
+        "openAiApi": {
+          "id": "2CpNUbYLbfayBvw1",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Zalo Message Trigger').item.json.message.data.uidFrom }}",
+        "contextWindowLength": 20
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -1072,
+        -880
+      ],
+      "id": "9f986041-4ca0-4fc5-a6fd-7252abf8f175",
+      "name": "Simple Memory1"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Zalo Message Trigger').item.json.message.data.uidFrom }}",
+        "contextWindowLength": 20
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -1072,
+        -560
+      ],
+      "id": "79209016-8a77-45d4-8744-b2b4f2ef3d45",
+      "name": "Simple Memory2"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Zalo Message Trigger').item.json.message.data.uidFrom }}",
+        "contextWindowLength": 20
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -1056,
+        -192
+      ],
+      "id": "d6998da8-dbb9-4de3-82e9-88864f9517f4",
+      "name": "Simple Memory3"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=TIN NHẮN KHÁCH : {{ $json.message.data.content }}",
+        "options": {
+          "systemMessage": "Bạn là trợ lý phân loại ý định khách hàng.\n\nNHIỆM VỤ: Đọc tin nhắn và trả về ĐÚNG MỘT JSON duy nhất:\n{\"json\":\"<Create_O|Check_O|Unknown>\"}\n\nQUY TẮC:\n- CHỈ xuất JSON, KHÔNG giải thích, KHÔNG thêm text\n- CHỈ dùng 1 trong 3 giá trị: Create_O, Check_O, Unknown\n- Nếu không chắc chắn → trả về {\"json\":\"Unknown\"}\n\nĐỊNH NGHĨA:\n- Create_O: Khách muốn mua/đặt hàng/order sản phẩm\n- Check_O: Khách hỏi về trạng thái đơn hàng, tra cứu mã đơn\n- Unknown: Chào hỏi, hỏi thông tin chung, tư vấn sản phẩm\n\nVÍ DỤ:\n\"Tôi muốn mua 2 lon sơn\" → {\"json\":\"Create_O\"}\n\"Đơn hàng của tôi đến đâu rồi?\" → {\"json\":\"Check_O\"}\n\"Xin chào\" → {\"json\":\"Unknown\"}\n\"Sơn 2K là gì?\" → {\"json\":\"Unknown\"}\n\"Giá sơn bao nhiêu?\" → {\"json\":\"Unknown\"}\n\nCHỈ TRẢ VỀ JSON."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -1712,
+        -880
+      ],
+      "id": "7bc73202-cc15-4163-8386-d84e9c39d906",
+      "name": "PhanLoai"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=TIN NHẮN KHÁCH :  {{ $('Zalo Message Trigger').item.json.message.data.content }}",
+        "options": {
+          "systemMessage": "Bạn là nhân viên bán hàng của Sơn Đức Dương, chuyên TẠO ĐƠN HÀNG.\n\nNHIỆM VỤ CHÍNH:\nThu thập ĐẦY ĐỦ thông tin để tạo đơn hàng:\n1. Tên khách hàng (họ tên đầy đủ)\n2. Số điện thoại (10 số, bắt đầu 0)\n3. Địa chỉ giao hàng (đầy đủ: số nhà, đường, quận/huyện, tỉnh/thành)\n4. Đơn hàng (sản phẩm, màu sắc, số lượng, đơn vị)\n\nQUY TRÌNH THU THẬP:\n1. HỎI VÀ THU THẬP ĐỦ TỪNG THÔNG TIN MỘT:\n   - Hỏi tên \n   - Hỏi SĐT\n   - Hỏi địa chỉ\n   - Hỏi chi tiết đơn hàng\n\n2. VALIDATE DỮ LIỆU:\n   - Số điện thoại: 10 số, bắt đầu bằng 0 (03, 05, 07, 08, 09)\n   - Địa chỉ: Phải có số nhà, tên đường, quận/huyện, tỉnh/thành\n   - Đơn hàng: Phải có tên sản phẩm, số lượng, đơn vị (lon/thùng/kg)\n\n3. XÁC NHẬN TRƯỚC KHI TẠO:\n   Sau khi có đủ thông tin, ĐỌC LẠI toàn bộ cho khách kiểm tra:\n   \"Em xác nhận lại thông tin đơn hàng của anh/chị:\n   - Tên: [tên]\n   - SĐT: [sđt]\n   - Địa chỉ: [địa chỉ]\n   - Đơn hàng: [chi tiết]\n   Thông tin này đã chính xác chưa ạ?\"\n\n4. CHỈ KHI KHÁCH XÁC NHẬN \"OK/ĐÚNG/CHÍNH XÁC\", MỚI XUẤT JSON:\n{\n  \"status\": \"confirmed\",\n  \"order_code\": \"YYYYMMDD-<CHỮ_ĐẦU_TÊN>-<3_SỐ_CUỐI_SĐT>\",\n  \"customer_name\": \"Nguyễn Văn A\",\n  \"phone\": \"0123456789\",\n  \"address\": \"123 Đường ABC, Quận 1, TP.HCM\",\n  \"items\": [\n    {\n      \"product\": \"Sơn dầu\",\n      \"color\": \"trắng\",\n      \"quantity\": 2,\n      \"unit\": \"lon\",\n      \"weight\": \"3kg\"\n    }\n  ]\n}\n\nLỖI THƯỜNG GẶP CẦN TRÁNH:\n- KHÔNG nói \"sản phẩm hết hàng\" - bạn không có thông tin kho\n- KHÔNG tự ý tạo đơn khi thiếu thông tin\n- KHÔNG bỏ qua bước xác nhận\n- CHỈ thu thập thông tin, KHÔNG tư vấn (đó là việc của agent khác)\n\nPHONG CÁCH:\n- Lịch sự: \"Dạ\", \"ạ\", \"em\", \"anh/chị\"\n- Từng bước một, không vội\n- Kiên nhẫn hỏi lại nếu thông tin chưa rõ\n\nVÍ DỤ ĐÚNG:\nKhách: \"Tôi muốn mua sơn\"\nBot: \"Dạ, em sẽ hỗ trợ anh/chị đặt hàng ạ. Cho em xin tên của anh/chị?\"\nKhách: \"Nguyễn Văn A\"\nBot: \"Dạ vâng, em ghi nhận tên anh Nguyễn Văn A. Cho em xin số điện thoại để liên hệ giao hàng ạ?\""
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -1168,
+        -1056
+      ],
+      "id": "1e728ecb-9229-4d1b-a188-dc00d85b9cd1",
+      "name": "TaoDon"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Zalo Message Trigger').item.json.message.data.content }}",
+        "options": {
+          "systemMessage": "Bạn là chuyên viên tư vấn sản phẩm sơn của Sơn Đức Dương.\n\nNHIỆM VỤ:\nTư vấn khách hàng về SẢN PHẨM SƠN CỦA CÔNG TY SƠN ĐỨC DƯƠNG."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -1168,
+        -736
+      ],
+      "id": "4d23e938-36c2-461c-93da-8f52c37a1423",
+      "name": "TuVan"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "BẠN HÃY TRA CỨU THÔNG TIN KHÁCH HÀNG DỰA THEO MÃ ĐƠN HÀNG HOẶC TÊN VÀ SỐ ĐIỆN THOẠI"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -1152,
+        -416
+      ],
+      "id": "c33bf960-e7f9-4cc4-a4b7-d9102eaa9df9",
+      "name": "KiemTra"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Zalo Message Trigger": {
+      "main": [
+        [
+          {
+            "node": "PhanLoai",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "TaoDon",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "TuVan",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "KiemTra",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create_O": {
+      "main": [
+        [
+          {
+            "node": "Delete row(s)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Delete row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Move file": {
+      "main": [
+        []
+      ]
+    },
+    "create_file_save_O": {
+      "main": [
+        [
+          {
+            "node": "Move file",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Insert row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s)": {
+      "main": [
+        [
+          {
+            "node": "Create_O",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete row(s)": {
+      "main": [
+        [
+          {
+            "node": "create_file_save_O",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "tách dữ liệu",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Zalo Send Message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Zalo Send Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "tách dữ liệu": {
+      "main": [
+        [
+          {
+            "node": "data_cus_order",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "data_cus_order": {
+      "main": [
+        [
+          {
+            "node": "Get row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "PhanLoai",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "PhanLoai",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "TaoDon",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "TuVan",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "KiemTra",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "TaoDon",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory2": {
+      "ai_memory": [
+        [
+          {
+            "node": "TuVan",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory3": {
+      "ai_memory": [
+        [
+          {
+            "node": "KiemTra",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PhanLoai": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TaoDon": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TuVan": {
+      "main": [
+        [
+          {
+            "node": "Zalo Send Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "KiemTra": {
+      "main": [
+        [
+          {
+            "node": "Zalo Send Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "94896ab5-d9ff-4437-ac83-5f6bad2678f7",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "44753a6378ae547d7bf1ddb4e53a93b0da44298c8fa7b94456d750c0a234d850"
+  },
+  "id": "9xobELzpv5jMkgjB",
+  "tags": []
+}

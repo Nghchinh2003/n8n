@@ -1,0 +1,34 @@
+{
+  "products": [
+    {
+      "id": "son-2k-trang",
+      "name": "Sơn 2K Trắng",
+      "type": "Sơn 2 thành phần",
+      "color": "Trắng",
+      "weights": [
+        "0,5kg",
+        "4kg"
+      ],
+      "price": {
+        "1kg": 200000,
+        "4kg": 950000
+      },
+      "description": "Sơn 2K cao cấp, độ bóng cao"
+    },
+    {
+      "id": "son-1k-do",
+      "name": "Sơn 1K Đỏ",
+      "type": "Sơn 1 thành phần",
+      "color": "Đỏ",
+      "weights": [
+        "1kg",
+        "3kg"
+      ],
+      "price": {
+        "1kg": 150000,
+        "3kg": 420000
+      },
+      "description": "Sơn 1K màu đỏ tươi, dễ thi công"
+    }
+  ]
+}

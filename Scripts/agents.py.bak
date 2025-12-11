@@ -1,0 +1,378 @@
+from typing import List, Dict, Optional
+from model_handler import ModelHandler
+from prompts import AgentPrompts
+from config import Config
+from utils import extract_json_from_response
+from document_handler import DocumentHandler
+from customer_profile_manager import CustomerProfileManager, get_customer_aware_prompt
+from check_order_handler import OrderDataHandler, CHECK_ORDER_PROMPT
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+class AgentService:
+    """
+    Service quản lý các agents với tính năng mở rộng.
+    """
+
+    def __init__(
+            self,
+            model_handler: ModelHandler,
+            document_handler: Optional[DocumentHandler] = None,
+            customer_profile_manager: Optional[CustomerProfileManager] = None,
+            order_data_handler: Optional[OrderDataHandler] = None
+    ):
+        """
+        Khởi tạo agent service.
+
+        Args:
+            model_handler: Instance của ModelHandler
+            document_handler: Optional handler cho tài liệu sản phẩm
+            customer_profile_manager: Optional manager cho customer profiles
+            order_data_handler: Optional handler cho tra cứu đơn hàng
+        """
+        self.model = model_handler
+        self.prompts = AgentPrompts()
+
+        # Tính năng mở rộng
+        self.doc_handler = document_handler
+        self.customer_manager = customer_profile_manager
+        self.order_handler = order_data_handler
+
+        logger.info("Agent Service đã được khởi tạo")
+
+        if self.doc_handler:
+            logger.info("✅ Document Handler: Enabled")
+        if self.customer_manager:
+            logger.info("✅ Customer Profile Manager: Enabled")
+        if self.order_handler:
+            logger.info("✅ Order Data Handler: Enabled")
+
+    # ============================================
+    # AGENT PHÂN LOẠI (CLASSIFICATION)
+    # ============================================
+
+    def phanloai_agent(
+            self,
+            user_input: str,
+            conversation_history: Optional[List[Dict]] = None,
+            customer_id: Optional[str] = None
+    ) -> str:
+        """
+        Agent phân loại ý định khách hàng.
+
+        Args:
+            user_input: Tin nhắn từ user
+            conversation_history: Các tin nhắn trước đó
+            customer_id: Optional customer ID để personalize
+
+        Returns:
+            Chuỗi JSON với kết quả phân loại
+        """
+        logger.info(f"PhanLoai đang xử lý: {user_input[:50]}...")
+
+        try:
+            # Base prompt
+            system_prompt = self.prompts.PHANLOAI
+
+            # Thêm customer context nếu có
+            if customer_id and self.customer_manager:
+                customer_context = self.customer_manager.get_customer_context(customer_id)
+                system_prompt = get_customer_aware_prompt(system_prompt, customer_context)
+
+            # Generate với temperature thấp
+            response = self.model.generate(
+                system_prompt=system_prompt,
+                user_input=user_input,
+                conversation_history=conversation_history,
+                temperature=Config.PHANLOAI_TEMPERATURE,
+                max_tokens=Config.PHANLOAI_MAX_TOKENS,
+            )
+
+            # Trích xuất và validate JSON
+            json_result = extract_json_from_response(response)
+
+            logger.info(f"Kết quả PhanLoai: {json_result}")
+
+            return json_result
+
+        except Exception as e:
+            logger.error(f"Lỗi PhanLoai: {e}", exc_info=True)
+            return '{"json":"Unknown"}'
+
+    # ============================================
+    # AGENT TẠO ĐƠN HÀNG (ORDER CREATION)
+    # ============================================
+
+    def create_order_agent(
+            self,
+            user_input: str,
+            conversation_history: Optional[List[Dict]] = None,
+            customer_id: Optional[str] = None
+    ) -> str:
+        """
+        Agent tạo đơn hàng với customer awareness.
+
+        Args:
+            user_input: Tin nhắn từ user
+            conversation_history: Các tin nhắn trước
+            customer_id: Optional customer ID
+
+        Returns:
+            Text response hoặc JSON (khi đơn hàng được xác nhận)
+        """
+        logger.info(f"CreateOrder đang xử lý: {user_input[:50]}...")
+
+        try:
+            # Base prompt
+            system_prompt = self.prompts.CREATE_ORDER
+
+            # Thêm customer context nếu có
+            if customer_id and self.customer_manager:
+                customer_context = self.customer_manager.get_customer_context(customer_id)
+                system_prompt = get_customer_aware_prompt(system_prompt, customer_context)
+
+            response = self.model.generate(
+                system_prompt=system_prompt,
+                user_input=user_input,
+                conversation_history=conversation_history,
+                temperature=Config.DEFAULT_TEMPERATURE,
+                max_tokens=Config.DEFAULT_MAX_TOKENS,
+            )
+
+            logger.debug(f"Độ dài response CreateOrder: {len(response)} ký tự")
+
+            return response
+
+        except Exception as e:
+            logger.error(f"Lỗi CreateOrder: {e}", exc_info=True)
+            return "Xin lỗi, tôi gặp lỗi khi xử lý đơn hàng. Vui lòng thử lại."
+
+    # ============================================
+    # AGENT TƯ VẤN (CONSULTING) - VỚI TÀI LIỆU (FIXED)
+    # ============================================
+
+    def consulting_agent(
+            self,
+            user_input: str,
+            conversation_history: Optional[List[Dict]] = None,
+            customer_id: Optional[str] = None
+    ) -> str:
+        """
+        Agent tư vấn với khả năng đọc tài liệu sản phẩm.
+
+        Args:
+            user_input: Tin nhắn từ user
+            conversation_history: Các tin nhắn trước
+            customer_id: Optional customer ID
+
+        Returns:
+            Text response tư vấn
+        """
+        logger.info(f"Consulting đang xử lý: {user_input[:50]}...")
+
+        try:
+            # Base prompt
+            system_prompt = self.prompts.CONSULTING
+
+            # ✅ FIXED: Thêm thông tin từ TẤT CẢ documents (không chỉ products)
+            if self.doc_handler:
+                relevant_info = ""
+                
+                # 1. Tìm trong TẤT CẢ tài liệu (TXT, PDF, etc.)
+                doc_results = self.doc_handler.search_in_documents(user_input, limit=3)
+                
+                if doc_results:
+                    relevant_info += "\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                    relevant_info += "📚 THÔNG TIN TỪ TÀI LIỆU:\n"
+                    relevant_info += "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                    
+                    for result in doc_results:
+                        relevant_info += f"\n[{result['filename']}]\n"
+                        relevant_info += f"{result['snippet']}\n"
+                        relevant_info += f"(Relevance: {result['relevance']} lần xuất hiện)\n"
+                    
+                    logger.info(f"✅ Tìm thấy {len(doc_results)} tài liệu liên quan")
+                
+                # 2. Tìm sản phẩm trong catalog (JSON/CSV)
+                products = self.doc_handler.search_products(user_input, limit=3)
+                
+                if products:
+                    relevant_info += "\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                    relevant_info += "🏷️ THÔNG TIN SẢN PHẨM:\n"
+                    relevant_info += "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                    
+                    for p in products:
+                        relevant_info += f"\n📦 {p.get('name', p.get('id'))}:\n"
+                        
+                        # Chỉ hiển thị các fields quan trọng
+                        important_fields = ['type', 'color', 'price', 'description', 'weights']
+                        for field in important_fields:
+                            if field in p:
+                                relevant_info += f"   • {field}: {p[field]}\n"
+                    
+                    logger.info(f"✅ Tìm thấy {len(products)} sản phẩm liên quan")
+                
+                # 3. Thêm vào system prompt
+                if relevant_info:
+                    system_prompt += relevant_info
+                    logger.debug(f"📝 Đã thêm {len(relevant_info)} ký tự context vào prompt")
+                else:
+                    logger.warning("⚠️ Không tìm thấy thông tin liên quan trong documents")
+
+            # Thêm customer context nếu có
+            if customer_id and self.customer_manager:
+                customer_context = self.customer_manager.get_customer_context(customer_id)
+                system_prompt = get_customer_aware_prompt(system_prompt, customer_context)
+
+            response = self.model.generate(
+                system_prompt=system_prompt,
+                user_input=user_input,
+                conversation_history=conversation_history,
+                temperature=Config.DEFAULT_TEMPERATURE,
+                max_tokens=Config.DEFAULT_MAX_TOKENS,
+            )
+
+            logger.debug(f"Độ dài response Consulting: {len(response)} ký tự")
+
+            return response
+
+        except Exception as e:
+            logger.error(f"Lỗi Consulting: {e}", exc_info=True)
+            return "Xin lỗi, tôi gặp lỗi khi tư vấn. Vui lòng hỏi lại."
+
+    # ============================================
+    # AGENT KIỂM TRA ĐƠN HÀNG (MỚI)
+    # ============================================
+
+    def check_order_agent(
+            self,
+            user_input: str,
+            conversation_history: Optional[List[Dict]] = None,
+            customer_id: Optional[str] = None
+    ) -> str:
+        """
+        Agent kiểm tra đơn hàng từ sheets/csv.
+
+        Args:
+            user_input: Tin nhắn từ user (mã đơn, SĐT, tên)
+            conversation_history: Các tin nhắn trước
+            customer_id: Optional customer ID
+
+        Returns:
+            Thông tin đơn hàng
+        """
+        logger.info(f"CheckOrder đang xử lý: {user_input[:50]}...")
+
+        try:
+            # Nếu không có order handler, trả về thông báo
+            if not self.order_handler:
+                return "Xin lỗi, tính năng tra cứu đơn hàng chưa được kích hoạt."
+
+            # Base prompt
+            system_prompt = CHECK_ORDER_PROMPT
+
+            # Tìm kiếm đơn hàng trong database
+            # Thử tìm theo mã đơn trước
+            orders = self.order_handler.search_orders(order_code=user_input, limit=5)
+
+            # Nếu không tìm thấy, thử tìm theo SĐT
+            if not orders and user_input.replace(' ', '').replace('-', '').isdigit():
+                orders = self.order_handler.search_orders(phone=user_input, limit=5)
+
+            # Nếu vẫn không tìm thấy, thử tìm theo tên
+            if not orders:
+                orders = self.order_handler.search_orders(customer_name=user_input, limit=5)
+
+            # Thêm kết quả tìm kiếm vào prompt
+            if orders:
+                search_results = "\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                search_results += "KẾT QUẢ TÌM KIẾM ĐƠN HÀNG:\n"
+                search_results += "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                
+                for order in orders:
+                    search_results += self.order_handler.format_order_info(order) + "\n"
+
+                system_prompt += search_results
+                
+                logger.info(f"✅ Tìm thấy {len(orders)} đơn hàng")
+            else:
+                system_prompt += "\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                system_prompt += "⚠️ KHÔNG TÌM THẤY ĐƠN HÀNG phù hợp với thông tin tra cứu.\n"
+                system_prompt += "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                
+                logger.warning(f"⚠️ Không tìm thấy đơn hàng cho: {user_input[:50]}")
+
+            # Thêm customer context nếu có
+            if customer_id and self.customer_manager:
+                customer_context = self.customer_manager.get_customer_context(customer_id)
+                system_prompt = get_customer_aware_prompt(system_prompt, customer_context)
+
+            response = self.model.generate(
+                system_prompt=system_prompt,
+                user_input=user_input,
+                conversation_history=conversation_history,
+                temperature=Config.DEFAULT_TEMPERATURE,
+                max_tokens=Config.DEFAULT_MAX_TOKENS,
+            )
+
+            logger.debug(f"Độ dài response CheckOrder: {len(response)} ký tự")
+
+            return response
+
+        except Exception as e:
+            logger.error(f"Lỗi CheckOrder: {e}", exc_info=True)
+            return "Xin lỗi, tôi gặp lỗi khi tra cứu đơn hàng. Vui lòng thử lại."
+
+    # ============================================
+    # BATCH PROCESSING
+    # ============================================
+
+    def batch_process(
+            self,
+            inputs: List[str],
+            agent_type: str = "consulting"
+    ) -> List[str]:
+        """
+        Batch processing cho nhiều inputs cùng lúc.
+
+        Lưu ý: Không sử dụng lịch sử hội thoại và customer context.
+
+        Args:
+            inputs: List các chuỗi user input
+            agent_type: Agent để sử dụng
+
+        Returns:
+            List các responses
+        """
+        logger.info(f"Batch processing {len(inputs)} inputs với agent: {agent_type}")
+
+        # Map agent type sang system prompt
+        prompt_map = {
+            "phanloai": self.prompts.PHANLOAI,
+            "create_order": self.prompts.CREATE_ORDER,
+            "consulting": self.prompts.CONSULTING,
+            "check_order": CHECK_ORDER_PROMPT
+        }
+
+        system_prompt = prompt_map.get(agent_type, self.prompts.CONSULTING)
+
+        try:
+            # Sử dụng batch generation
+            outputs = self.model.batch_generate(
+                prompts=inputs,
+                system_prompt=system_prompt
+            )
+
+            # Post-process cho agent phanloai
+            if agent_type == "phanloai":
+                outputs = [extract_json_from_response(out) for out in outputs]
+
+            logger.info(f"Batch processing hoàn tất: {len(outputs)} outputs")
+
+            return outputs
+
+        except Exception as e:
+            logger.error(f"Lỗi batch processing: {e}", exc_info=True)
+            return ["Lỗi xử lý"] * len(inputs)
